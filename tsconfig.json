@@ -1,0 +1,24 @@
+{
+  "include": [
+    "src/*.ts"
+  ],
+  "filesGlob": [
+    "src/*.ts"
+  ],
+  "exclude": [],
+  "compilerOptions": {
+    "outDir": "./dist",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "noImplicitAny": false,
+    "strictNullChecks": true,
+    "noUnusedLocals": true,
+    "noEmitOnError": false,
+    "alwaysStrict": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedParameters": true,
+    "target": "ES6",
+    "lib": ["DOM", "ES6"]
+  }
+}

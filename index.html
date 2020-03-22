@@ -1,0 +1,27 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" href="assets/chessground.css">
+    <link rel="stylesheet" href="assets/theme.css">
+    <link rel="stylesheet" href="assets/3d.css">
+    <link rel="stylesheet" href="assets/examples.css">
+  </head>
+  <body>
+    <div id="chessdrill"></div>
+    <script src="dist/chessdrill-app.js"></script>
+    <script>
+      const lines = [
+        '1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. c3 Nf6 5. d4 exd4 6. cxd4 *',
+        '1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. c3 Nf6 5. d4 exd4 6. e5 *',
+        '1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. c3 Nf6 5. d3 *'
+      ];
+
+      const opts = {
+        lines: lines,
+        mode: 'play'
+      };
+
+      ChessdrillApp.run(document.getElementById('chessdrill'), opts);
+    </script>
+  </body>
+</html>
