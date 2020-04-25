@@ -1,8 +1,8 @@
 export type Mode = 'play' | 'review';
 
 export type Options = {
-  'lines': [string],
-  'mode': Mode
+  lines: [string];
+  mode: Mode;
 };
 
 export type Status = 'new' | 'mainline' | 'variation' | 'mistake';
