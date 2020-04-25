@@ -8,9 +8,11 @@ import * as types from './types';
 
 export default class View {
   private ctrl: Control;
+  private color: types.Color;
 
   constructor(ctrl: Control) {
     this.ctrl = ctrl;
+    this.color = this.ctrl.getColor();
   }
 
   public render(): VNode {
@@ -21,7 +23,7 @@ export default class View {
   }
 
   private renderBoard(): VNode {
-    return h('section.blue.merida', [
+    return h('section.brown.merida', [
       h('div.cg-wrap', {
         hook: {
           insert: (vnode: VNode) => this.mkBoard(vnode),
@@ -31,51 +33,19 @@ export default class View {
   }
 
   private renderControl(): VNode {
-    return h('div.cd-ctrl', [
+    return h('div.cd-control', [
       this.renderNavigation(),
-      this.renderStatus()
-    ]);
-  }
-
-  private renderStatus(): VNode {
-    let icon: string;
-    let message: string;
-    switch (this.ctrl.getStatus()) {
-      case 'new':
-        icon = '?';
-        message = 'choose the best move for white';
-        break;
-      case 'mainline':
-        icon = '✓';
-        message = 'mainline';
-        break;
-      case 'variation':
-        icon = '!';
-        message = 'variation';
-        break;
-      case 'mistake':
-        icon = '✗';
-        message = 'mistake';
-        break;
-    };
-    if (this.ctrl.getResult() !== 'incomplete') {
-      message = this.ctrl.getResult();
-    }
-    return h('div.status', [
-      h('div.icon', icon),
-      h('div.message', [
-        h('strong', message)
-      ])
+      this.renderDescription()
     ]);
   }
 
   private renderNavigation(): VNode {
-    return h('div.nav', {
+    return h('div.cd-navigate', {
       hook: {
         insert: (vnode: VNode) => this.bindNavigationButton(vnode)
       }
     }, [
-      h('div.navbuttons', [
+      h('div.cd-navigate-menu', [
         this.renderNavigationButton('<<', 'first'),
         this.renderNavigationButton('<', 'prev'),
         this.renderNavigationButton('>', 'next'),
@@ -85,7 +55,7 @@ export default class View {
   }
 
   private renderNavigationButton(icon: string, position: types.Position): VNode {
-    return h('button.nav', {
+    return h('button.cd-navigate-button', {
       attrs: {
         'data-position': position,
         'data-icon': icon
@@ -117,6 +87,75 @@ export default class View {
     const position = target.getAttribute('data-position') ||
       (target.parentNode as Element).getAttribute('data-position');
     return position as types.Position;
+  }
+
+  private renderDescription(): VNode {
+    let description: VNode;
+    switch (this.ctrl.options.mode) {
+      case 'play':
+        description = this.renderInstructions();
+        break;
+      case 'review':
+        description = this.renderAnnotations();
+        break;
+    }
+    return h('div.cd-description', description);
+  }
+
+  private renderInstructions(): VNode {
+    let icon: VNode;
+    let message: string;
+    let instructions: string;
+    switch (this.ctrl.getStatus()) {
+      case 'new':
+        icon = h('div.cd-piece', [h(`piece.king.${this.color}`)]);
+        message = 'Your turn';
+        instructions = `Find the best move for ${this.color}`;
+        break;
+      case 'mainline':
+        icon = h('div.cd-icon.correct', '✓');
+        message = 'Best move!';
+        instructions = 'Keep going...';
+        break;
+      case 'variation':
+        icon = h('div.cd-icon.correct', '?');
+        message = 'Good move';
+        instructions = 'What other moves are good?';
+        break;
+      case 'mistake':
+        icon = h('div.cd-icon.incorrect', '✗');
+        message = 'Puzzle failed';
+        instructions = 'But you can keep trying';
+        break;
+    };
+    switch (this.ctrl.getResult()) {
+      case 'incomplete':
+        break;
+      case 'success':
+        message = 'Puzzle completed!';
+        instructions = '';
+        break;
+      case 'failure':
+        message = 'Puzzle failed';
+        instructions = '';
+        break;
+    }
+    return h('div.cd-instructions', [
+      icon,
+      h('div.cd-message', [
+        h('strong', message),
+        h('em', instructions)
+      ])
+    ]);
+  }
+
+  private renderAnnotations(): VNode {
+    return h('div.cd-annotations', [
+      h('div.cd-piece', [h(`piece.king.${this.color}`)]),
+      h('div.cd-message', [
+        h('strong', 'Giuoco Piano'),
+      ])
+    ]);
   }
 
   private mkBoard(vnode: VNode) {

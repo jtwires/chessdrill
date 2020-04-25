@@ -6,8 +6,8 @@ import { Tree, TreeIterator } from './tree';
 
 export default class Control {
   public redraw: () => void;
+  public readonly options: types.Options;
 
-  private mode: types.Mode;
   private status: types.Status;
   private result: types.Result;
 
@@ -16,13 +16,25 @@ export default class Control {
 
   private _api: Api;
 
-  constructor(opts, redraw: () => void) {
-    this.mode = opts.mode;
+  constructor(options: types.Options, redraw: () => void) {
+    this.options = options;
     this.status = 'new';
     this.result = 'incomplete';
 
-    this.tree = new Tree(opts.lines);
+    this.tree = new Tree(this.options.lines);
     this.line = this.tree.iterator();
+
+    if (this.options.mode === 'review') {
+      // preload line
+      while (true) {
+        let moves = this.line.peek();
+        if (moves.length === 0) {
+          break;
+        }
+        this.line.push(moves[0]);
+      }
+      this.line.first();
+    }
 
     this.redraw = redraw;
   }
@@ -42,6 +54,10 @@ export default class Control {
 
   public getResult(): types.Result {
     return this.result;
+  }
+
+  public getColor(): types.Color {
+    return this.line.color();
   }
 
   public navigate(position: types.Position) {
@@ -91,7 +107,7 @@ export default class Control {
           fen: this.line.fen(),
           lastMove: this.lastmove(),
           turnColor: this.line.color(),
-          viewOnly: this.mode === 'view' || this.result === 'success',
+          viewOnly: this.options.mode === 'review' || this.result !== 'incomplete',
           movable: {
             free: false,
             color: this.line.color(),
