@@ -25,13 +25,8 @@ export default class Control {
     this.line = this.tree.iterator();
 
     if (this.options.mode === 'review') {
-      // preload line
-      while (true) {
-        let moves = this.line.peek();
-        if (moves.length === 0) {
-          break;
-        }
-        this.line.push(moves[0]);
+      for (let move of this.line.mainline()) {
+        this.line.push(move);
       }
       this.line.first();
     }
