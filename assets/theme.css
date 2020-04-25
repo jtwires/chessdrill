@@ -5,6 +5,10 @@
   background-image: url('images/board/blue.svg');
 }
 
+.brown .cg-wrap {
+  background-image: url('images/board/brown.svg');
+}
+
 .merida .cg-wrap piece.pawn.white {
   background-image: url('images/pieces/merida/wP.svg');
 }
