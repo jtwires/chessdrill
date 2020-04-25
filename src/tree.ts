@@ -173,6 +173,10 @@ export class TreeIterator implements IterableIterator<types.Move> {
     return this.line.turn() == 'w' ? 'white' : 'black';
   }
 
+  public check(): boolean {
+    return this.line.in_check();
+  }
+
   public destinations(): { [orig: string]: [types.Square] } {
     const dsts = {};
     this.line.SQUARES.forEach(

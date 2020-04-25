@@ -107,6 +107,7 @@ export default class Control {
           fen: this.line.fen(),
           lastMove: this.lastmove(),
           turnColor: this.line.color(),
+          check: this.line.check(),
           viewOnly: this.options.mode === 'review' || this.result !== 'incomplete',
           movable: {
             free: false,
