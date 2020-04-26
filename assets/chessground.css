@@ -8,7 +8,7 @@
 .cg-wrap {
     width: 100%; /*320px*/;
     height: 100%; /*320px*/;
-  position: relative;
+  position: absolute;
   display: block;
 }
 

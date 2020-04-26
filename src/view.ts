@@ -46,7 +46,7 @@ export default class View {
     const color = this.ctrl.api.state.turnColor === 'white' ? 'black' : 'white';
     const orientation = this.ctrl.api.state.orientation;
     const vertical = color === orientation ? 'top' : 'bottom';
-    return h('div#cd-promotion-choice.' + vertical, {
+    return h('div#cd-promotion-choice.cg-wrap.' + vertical, {
       hook: {
         insert: (vnode: VNode) => this.bindPromotionChoices(vnode)
       }

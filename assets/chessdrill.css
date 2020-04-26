@@ -3,6 +3,52 @@
     height: 320px;
 }
 
+.cd-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+#cd-promotion-choice {
+    background: rgba(237, 235, 233, 0.7);
+    z-index: 205;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+#cd-promotion-choice square {
+    cursor: pointer;
+    border-radius: 50%;
+    background-color: #b0b0b0;
+    box-shadow: inset 0 0 25px 3px #808080;
+    transition: all 150ms;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 12.5%;
+    height: 12.5%;
+    pointer-events: none;
+}
+
+#cd-promotion-choice square:hover {
+    box-shadow: inset 0 0 48px 8px #d64f00;
+    border-radius: 0%;
+}
+
+#cd-promotion-choice square:hover piece {
+    transform: none;
+}
+
+#cd-promotion-choice piece {
+    pointer-events: auto;
+    opacity: 1;
+    width: 100%;
+    height: 100%;
+    transition: all 150ms;
+    transform: scale(0.8);
+}
+
 .cd-control {
     justify-content: center;
     display: flex;
