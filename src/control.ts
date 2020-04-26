@@ -5,7 +5,7 @@ import * as types from './types';
 import { Tree, TreeIterator } from './tree';
 
 export default class Control {
-  public redraw: () => void;
+  public readonly redraw: () => void;
   public readonly options: types.Options;
 
   private status: types.Status;
@@ -19,6 +19,7 @@ export default class Control {
 
   constructor(options: types.Options, redraw: () => void) {
     this.options = options;
+    this.redraw = redraw;
     this.status = 'new';
     this.result = 'incomplete';
 
@@ -31,8 +32,6 @@ export default class Control {
       }
       this.line.first();
     }
-
-    this.redraw = redraw;
   }
 
   get api(): Api {
