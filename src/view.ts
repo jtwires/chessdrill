@@ -226,6 +226,7 @@ export default class View {
       element,
       {
         autoCastle: true,
+        orientation: this.color,
         draggable: {
           showGhost: true
         },
