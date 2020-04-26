@@ -2,6 +2,7 @@ import { h } from 'snabbdom';
 import { VNode } from 'snabbdom/vnode';
 
 import { Chessground } from 'chessground';
+import * as cgUtil from 'chessground/util';
 
 import Control from './control';
 import * as types from './types';
@@ -23,13 +24,73 @@ export default class View {
   }
 
   private renderBoard(): VNode {
-    return h('section.brown.merida', [
+    const vnodes = [
       h('div.cg-wrap', {
         hook: {
           insert: (vnode: VNode) => this.mkBoard(vnode),
         }
       })
-    ]);
+    ];
+    const promotion = this.renderPromotion();
+    if (promotion) {
+      vnodes.splice(1, 0, promotion);
+    }
+    return h('div.cd-container.brown.merida', vnodes);
+  }
+
+  private renderPromotion(): VNode | undefined {
+    const move = this.ctrl.getPromotion();
+    if (move === undefined) {
+      return undefined;
+    }
+    const color = this.ctrl.api.state.turnColor === 'white' ? 'black' : 'white';
+    const orientation = this.ctrl.api.state.orientation;
+    const vertical = color === orientation ? 'top' : 'bottom';
+    return h('div#cd-promotion-choice.' + vertical, {
+      hook: {
+        insert: (vnode: VNode) => this.bindPromotionChoices(vnode)
+      }
+    }, this.renderPromotionChoices(move.dest, color, orientation));
+  }
+
+  private bindPromotionChoices(vnode: VNode) {
+    const element = vnode.elm as HTMLElement;
+    element.addEventListener('click', () => this.ctrl.promotionCancel());
+    element.oncontextmenu = () => false;
+  }
+
+  private renderPromotionChoices(
+    dest: types.Square, color: types.Color, orientation: types.Color): VNode[] {
+    let left = (8 - cgUtil.key2pos(dest)[0]) * 12.5;
+    if (orientation === 'white') {
+      left = 87.5 - left;
+    }
+    return ['queen', 'knight', 'rook', 'bishop'].map(
+      (role, idx) => {
+        const top = (color === orientation ? idx : 7 - idx) * 12.5;
+        return this.renderPromotionChoice(role as types.Role, color, top, left);
+      }
+    );
+  }
+
+  private renderPromotionChoice(
+    role: types.Role, color: types.Color, top: number, left: number): VNode {
+    return h('square', {
+      attrs: {
+        style: `top: ${top}%;left: ${left}%`
+      },
+      hook: {
+        insert: (vnode: VNode) => this.bindPromotionChoice(vnode, role)
+      }
+    }, [h(`piece.${role}.${color}`)]);
+  }
+
+  private bindPromotionChoice(vnode: VNode, role: types.Role) {
+    const element = vnode.elm as HTMLElement;
+    element.addEventListener('click', event => {
+      event.stopPropagation();
+      this.ctrl.promotionFinish(role);
+    });
   }
 
   private renderControl(): VNode {
@@ -64,7 +125,7 @@ export default class View {
   }
 
   private bindNavigationButton(vnode: VNode) {
-    const element = (vnode.elm as HTMLElement);
+    const element = vnode.elm as HTMLElement;
     for (const eventType of ['touchstart', 'mousedown']) {
       element.addEventListener(
         eventType,
@@ -170,7 +231,7 @@ export default class View {
         },
         animation: {
           enabled: true,
-          duration: 500,
+          duration: 200,
         },
         highlight: {
           lastMove: true,

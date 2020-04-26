@@ -10,6 +10,7 @@ export default class Control {
 
   private status: types.Status;
   private result: types.Result;
+  private promotion: types.Move | undefined;
 
   private tree: Tree;
   private line: TreeIterator;
@@ -116,12 +117,23 @@ export default class Control {
   }
 
   private validate(orig: Key, dest: Key) {
-    console.log(`orig ${orig} dest ${dest}`);
-    // TODO: promotions
+    if (this.promotionStart(orig, dest)) {
+      this.redraw();
+      return;
+    }
+    this.respond(orig, dest);
+  }
+
+  private respond(orig: Key, dest: Key, promotion?: types.Role) {
+    console.log(`orig ${orig} dest ${dest} role ${promotion}`);
+
+    const isMatch = (m: types.Move) => {
+      return orig === m.orig && dest === m.dest && promotion === m.promotion;
+    };
 
     const [mainline, ...variations] = this.line.peek();
-    if (mainline !== undefined &&
-      orig === mainline.orig && dest === mainline.dest) {
+    if (mainline !== undefined && isMatch(mainline)) {
+
       this.status = 'mainline';
 
       // apply user move
@@ -137,8 +149,7 @@ export default class Control {
         // puzzle completed
         this.setResult('success');
       }
-    } else if (variations !== undefined &&
-      variations.some((m: types.Move) => orig === m.orig && dest === m.dest)) {
+    } else if (variations !== undefined && variations.some((m: types.Move) => isMatch(m))) {
       this.status = 'variation';
     } else {
       this.setResult('failure');
@@ -153,5 +164,41 @@ export default class Control {
       },
       500
     );
+  }
+
+  public getPromotion(): types.Move | undefined {
+    return this.promotion;
+  }
+
+  private promotionStart(orig: Key, dest: Key): boolean {
+    const piece = this.api.state.pieces[dest];
+    if (piece === undefined || piece.role !== 'pawn') {
+      return false;
+    }
+    if (this.api.state.turnColor === 'black' && dest[1] !== '8') {
+      return false;
+    }
+    if (this.api.state.turnColor === 'white' && dest[1] !== '1') {
+      return false;
+    }
+    this.promotion = { orig: orig as types.Square, dest: dest as types.Square };
+    return true;
+  }
+
+  public promotionFinish(role: types.Role) {
+    if (this.promotion === undefined) {
+      return;
+    }
+    const piece = this.api.state.pieces[this.promotion.dest];
+    if (piece === undefined || piece.role !== 'pawn') {
+      return;
+    }
+    this.respond(this.promotion.orig, this.promotion.dest, role);
+    this.promotion = undefined;
+  }
+
+  public promotionCancel() {
+    this.promotion = undefined;
+    this.redraw();
   }
 }

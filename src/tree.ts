@@ -1,6 +1,52 @@
-import { Chess, ChessInstance } from 'chess.js';
+import { Chess, ChessInstance, ShortMove, PieceType } from 'chess.js';
 
 import * as types from './types';
+
+type PromotedRole = Exclude<types.Role, 'pawn'> | undefined;
+
+type PromotedPieceType = Exclude<PieceType, 'p'> | undefined;
+
+const toPromotedRole = (piece: PromotedPieceType): PromotedRole => {
+  switch (piece) {
+    case 'k':
+      return 'king';
+    case 'q':
+      return 'queen';
+    case 'r':
+      return 'rook';
+    case 'b':
+      return 'bishop';
+    case 'n':
+      return 'knight';
+    case undefined:
+      return undefined;
+  }
+}
+
+const toPromotedPieceType = (role: PromotedRole): PromotedPieceType => {
+  switch (role) {
+    case 'king':
+      return 'k';
+    case 'queen':
+      return 'q';
+    case 'rook':
+      return 'r';
+    case 'bishop':
+      return 'b';
+    case 'knight':
+      return 'n';
+    case undefined:
+      return undefined;
+  }
+}
+
+const toMove = (m: ShortMove) => {
+  return { orig: m.from, dest: m.to, promotion: toPromotedRole(m.promotion) };
+}
+
+const toShortMove = (m: types.Move) => {
+  return { from: m.orig, to: m.dest, promotion: toPromotedPieceType(m.promotion) };
+};
 
 class Node {
   fen: types.FEN;
@@ -10,6 +56,7 @@ class Node {
   constructor(fen: types.FEN) {
     this.fen = fen;
     this.parent = undefined;
+    // Map preserves insertion order
     this.children = new Map<string, Node>();
   }
 
@@ -44,13 +91,13 @@ export class Tree implements Iterable<types.Move> {
           throw new Error('invalid pgn');
         }
 
-        const moves: types.Move[] = [];
+        const moves: ShortMove[] = [];
         while (true) {
           const move = line.undo();
           if (!move) {
             break;
           }
-          moves.push({ orig: move.from, dest: move.to });
+          moves.push(move);
         }
         moves.reverse();
 
@@ -63,10 +110,10 @@ export class Tree implements Iterable<types.Move> {
 
         let node = this.root;
         for (let move of moves) {
-          line.move({ from: move.orig, to: move.dest });
-          let child = node.find(move);
+          line.move(move);
+          let child = node.find(toMove(move));
           if (!child) {
-            child = node.push(move, line.fen());
+            child = node.push(toMove(move), line.fen());
           }
           node = child;
         }
@@ -121,7 +168,7 @@ export class TreeIterator implements IterableIterator<types.Move> {
       }
     }
     this.link = this.link.next;
-    this.line.move({ from: this.link.move!.orig, to: this.link.move!.dest });
+    this.line.move(toShortMove(this.link.move!));
     return {
       value: this.link.move!,
       done: false
@@ -138,7 +185,7 @@ export class TreeIterator implements IterableIterator<types.Move> {
   public last() {
     while (this.link.next) {
       this.link = this.link.next;
-      this.line.move({ from: this.link.move!.orig, to: this.link.move!.dest });
+      this.line.move(toShortMove(this.link.move!));
     }
   }
 
@@ -162,7 +209,7 @@ export class TreeIterator implements IterableIterator<types.Move> {
     this.link.next = link;
     link.prev = this.link;
     this.link = link;
-    this.line.move({ from: move.orig, to: move.dest });
+    this.line.move(toShortMove(move));
   }
 
   public fen(): types.FEN {
