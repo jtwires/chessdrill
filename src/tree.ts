@@ -50,12 +50,10 @@ const toShortMove = (m: types.Move) => {
 
 class Node {
   fen: types.FEN;
-  parent: Node | undefined;
   children: Map<string, Node>;
 
   constructor(fen: types.FEN) {
     this.fen = fen;
-    this.parent = undefined;
     // Map preserves insertion order
     this.children = new Map<string, Node>();
   }
