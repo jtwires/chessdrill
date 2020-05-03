@@ -211,12 +211,7 @@ export default class View {
   }
 
   private renderAnnotations(): VNode {
-    return h('div.cd-annotations', [
-      h('div.cd-piece', [h(`piece.king.${this.color}`)]),
-      h('div.cd-message', [
-        h('strong', 'Giuoco Piano'),
-      ])
-    ]);
+    return h('div.cd-annotations', this.ctrl.getAnnotation());
   }
 
   private mkBoard(vnode: VNode) {

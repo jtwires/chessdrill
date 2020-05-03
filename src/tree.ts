@@ -49,11 +49,13 @@ const toShortMove = (m: types.Move) => {
 };
 
 class Node {
-  fen: types.FEN;
-  children: Map<string, Node>;
+  readonly fen: types.FEN;
+  readonly annotation: string | undefined;
+  readonly children: Map<string, Node>;
 
-  constructor(fen: types.FEN) {
+  constructor(fen: types.FEN, annotation?: string) {
     this.fen = fen;
+    this.annotation = annotation;
     // Map preserves insertion order
     this.children = new Map<string, Node>();
   }
@@ -66,8 +68,8 @@ class Node {
     return this.children.get(this.key(move));
   }
 
-  push(move: types.Move, fen: types.FEN): Node {
-    const node = new Node(fen);
+  push(move: types.Move, fen: types.FEN, annotation?: string): Node {
+    const node = new Node(fen, annotation);
     this.children.set(this.key(move), node);
     return node;
   }
@@ -111,7 +113,7 @@ export class Tree implements Iterable<types.Move> {
           line.move(move);
           let child = node.find(toMove(move));
           if (!child) {
-            child = node.push(toMove(move), line.fen());
+            child = node.push(toMove(move), line.fen(), line.annotation());
           }
           node = child;
         }
@@ -212,6 +214,10 @@ export class TreeIterator implements IterableIterator<types.Move> {
 
   public fen(): types.FEN {
     return this.link.node.fen;
+  }
+
+  public annotation(): string | undefined {
+    return this.link.node.annotation;
   }
 
   public color(): types.Color {

@@ -55,6 +55,10 @@ export default class Control {
     return this.line.color();
   }
 
+  public getAnnotation(): string | undefined {
+    return this.line.annotation();
+  }
+
   public navigate(position: types.Position) {
     switch (position) {
       case 'first':

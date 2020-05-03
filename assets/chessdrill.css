@@ -140,8 +140,11 @@
 }
 
 .cd-annotations {
-    display: contents;
     align-items: center;
+    font-style: normal;
+    overflow: auto;
+    height: 3em;
+    line-height: 1em;
 }
 
 .cd-message > * {
