@@ -217,8 +217,10 @@ export default class View {
   private mkBoard(vnode: VNode) {
     const element = vnode.elm as HTMLElement;
     element.className = 'cg-wrap';
-    this.ctrl.api = Chessground(
-      element,
+    if (this.ctrl.api === undefined) {
+      this.ctrl.api = Chessground(element);
+    }
+    this.ctrl.api.set(
       {
         autoCastle: true,
         orientation: this.color,
@@ -235,5 +237,6 @@ export default class View {
         }
       }
     );
+    this.ctrl.update();
   }
 }
