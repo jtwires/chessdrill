@@ -58,8 +58,8 @@ export default class Control {
     return this.line.color();
   }
 
-  public getAnnotation(): string | undefined {
-    return this.line.annotation();
+  public getComment(): string | undefined {
+    return this.line.comment();
   }
 
   public navigate(position: types.Position) {

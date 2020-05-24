@@ -157,7 +157,7 @@ export default class View {
         description = this.renderInstructions();
         break;
       case 'review':
-        description = this.renderAnnotations();
+        description = this.renderComments();
         break;
     }
     return h('div.cd-description', description);
@@ -210,8 +210,8 @@ export default class View {
     ]);
   }
 
-  private renderAnnotations(): VNode {
-    return h('div.cd-annotations', this.ctrl.getAnnotation());
+  private renderComments(): VNode {
+    return h('div.cd-comments', this.ctrl.getComment());
   }
 
   private mkBoard(vnode: VNode) {

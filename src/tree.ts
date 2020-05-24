@@ -50,12 +50,12 @@ const toShortMove = (m: types.Move) => {
 
 class Node {
   readonly fen: types.FEN;
-  readonly annotation: string | undefined;
+  readonly comment: string | undefined;
   readonly children: Map<string, Node>;
 
-  constructor(fen: types.FEN, annotation?: string) {
+  constructor(fen: types.FEN, comment?: string) {
     this.fen = fen;
-    this.annotation = annotation;
+    this.comment = comment;
     // Map preserves insertion order
     this.children = new Map<string, Node>();
   }
@@ -68,8 +68,8 @@ class Node {
     return this.children.get(this.key(move));
   }
 
-  push(move: types.Move, fen: types.FEN, annotation?: string): Node {
-    const node = new Node(fen, annotation);
+  push(move: types.Move, fen: types.FEN, comment?: string): Node {
+    const node = new Node(fen, comment);
     this.children.set(this.key(move), node);
     return node;
   }
@@ -102,7 +102,7 @@ export class Tree implements Iterable<types.Move> {
         moves.reverse();
 
         if (this.root === undefined) {
-          this.root = new Node(line.fen());
+          this.root = new Node(line.fen(), line.get_comment());
         }
         if (this.root.fen != line.fen()) {
           throw new Error('invalid variation');
@@ -113,7 +113,7 @@ export class Tree implements Iterable<types.Move> {
           line.move(move);
           let child = node.find(toMove(move));
           if (!child) {
-            child = node.push(toMove(move), line.fen(), line.annotation());
+            child = node.push(toMove(move), line.fen(), line.get_comment());
           }
           node = child;
         }
@@ -216,8 +216,8 @@ export class TreeIterator implements IterableIterator<types.Move> {
     return this.link.node.fen;
   }
 
-  public annotation(): string | undefined {
-    return this.link.node.annotation;
+  public comment(): string | undefined {
+    return this.link.node.comment;
   }
 
   public color(): types.Color {
