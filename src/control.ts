@@ -39,6 +39,9 @@ export default class Control {
   }
 
   set api(api: Api) {
+    if (this._api !== undefined) {
+      this._api.destroy();
+    }
     this._api = api;
     this.update();
   }
