@@ -1,5 +1,8 @@
-import { h } from 'snabbdom';
+import { h, init } from 'snabbdom';
 import { VNode } from 'snabbdom/vnode';
+import klass from 'snabbdom/modules/class';
+import attributes from 'snabbdom/modules/attributes';
+import listeners from 'snabbdom/modules/eventlisteners';
 
 import { Chessground } from 'chessground';
 import * as cgUtil from 'chessground/util';
@@ -11,12 +14,22 @@ export default class View {
   private ctrl: Control;
   private color: types.Color;
 
-  constructor(ctrl: Control) {
+  private vnode: VNode | Element;
+  private patch: (oldVnode: Element | VNode, vnode: VNode) => VNode;
+
+  constructor(ctrl: Control, element: Element) {
     this.ctrl = ctrl;
     this.color = this.ctrl.getColor();
+
+    this.vnode = element;
+    this.patch = init([klass, attributes, listeners]);
   }
 
-  public render(): VNode {
+  public redraw() {
+    this.vnode = this.patch(this.vnode, this.render());
+  }
+
+  private render(): VNode {
     return h('div#chessdrill', [
       this.renderBoard(),
       this.renderControl(),
@@ -139,7 +152,6 @@ export default class View {
     if (position) {
       event.preventDefault();
       this.ctrl.navigate(position);
-      this.ctrl.redraw();
     }
   }
 

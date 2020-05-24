@@ -5,8 +5,8 @@ import * as types from './types';
 import { Tree, TreeIterator } from './tree';
 
 export default class Control {
-  public readonly redraw: () => void;
   public readonly options: types.Options;
+  private readonly redraw: () => void;
 
   private status: types.Status;
   private result: types.Result;
