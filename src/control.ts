@@ -81,6 +81,26 @@ export default class Control {
     this.redraw();
   }
 
+  public update() {
+    this.withApi(
+      api => api.set(
+        {
+          fen: this.line.fen(),
+          lastMove: this.lastmove(),
+          turnColor: this.line.color(),
+          check: this.line.check(),
+          viewOnly: this.options.mode === 'review' || this.result !== 'incomplete',
+          movable: {
+            free: false,
+            color: this.line.color(),
+            dests: this.line.destinations(),
+            events: { after: (orig: Key, dest: Key) => this.checkMove(orig, dest) }
+          }
+        }
+      )
+    );
+  }
+
   private withApi<T>(f: (api: Api) => T): T | undefined {
     if (this._api === undefined) {
       return undefined;
@@ -102,35 +122,40 @@ export default class Control {
     return [move.orig, move.dest];
   }
 
-  private update() {
-    this.withApi(
-      api => api.set(
-        {
-          fen: this.line.fen(),
-          lastMove: this.lastmove(),
-          turnColor: this.line.color(),
-          check: this.line.check(),
-          viewOnly: this.options.mode === 'review' || this.result !== 'incomplete',
-          movable: {
-            free: false,
-            color: this.line.color(),
-            dests: this.line.destinations(),
-            events: { after: (orig: Key, dest: Key) => this.validate(orig, dest) }
-          }
-        }
-      )
-    );
-  }
-
-  private validate(orig: Key, dest: Key) {
+  private checkMove(orig: Key, dest: Key) {
     if (this.promotionStart(orig, dest)) {
       this.redraw();
       return;
     }
-    this.respond(orig, dest);
+    this.updateStatus(orig, dest);
+    this.makeResponse();
   }
 
-  private respond(orig: Key, dest: Key, promotion?: types.Role) {
+  private makeResponse() {
+    if (this.status !== 'mainline') {
+      return;
+    }
+    if (this.result !== 'incomplete') {
+      return;
+    }
+    setTimeout(
+      () => {
+        let continuations = this.line.peek();
+        if (continuations.length > 0) {
+          this.line.push(continuations[0]);
+          continuations = this.line.peek();
+        }
+        if (continuations.length === 0) {
+          this.setResult('success');
+        }
+        this.update();
+        this.redraw();
+      },
+      500
+    );
+  }
+
+  private updateStatus(orig: Key, dest: Key, promotion?: types.Role) {
     console.log(`orig ${orig} dest ${dest} role ${promotion}`);
 
     const isMatch = (m: types.Move) => {
@@ -139,37 +164,18 @@ export default class Control {
 
     const [mainline, ...variations] = this.line.peek();
     if (mainline !== undefined && isMatch(mainline)) {
-
       this.status = 'mainline';
-
-      // apply user move
       this.line.push(mainline);
-
-      const continuations = this.line.peek();
-      if (continuations.length > 0) {
-        // apply continuation
-        this.line.push(continuations[0]);
-      }
-
-      if (this.line.peek().length === 0) {
-        // puzzle completed
-        this.setResult('success');
-      }
-    } else if (variations !== undefined && variations.some((m: types.Move) => isMatch(m))) {
+    } else if (variations !== undefined
+      && variations.some((m: types.Move) => isMatch(m))) {
       this.status = 'variation';
     } else {
       this.setResult('failure');
       this.status = 'mistake';
     }
 
-    // update board
-    setTimeout(
-      () => {
-        this.update();
-        this.redraw();
-      },
-      500
-    );
+    this.update();
+    this.redraw();
   }
 
   public getPromotion(): types.Move | undefined {
@@ -192,15 +198,17 @@ export default class Control {
   }
 
   public promotionFinish(role: types.Role) {
-    if (this.promotion === undefined) {
+    const promotion = this.promotion;
+    this.promotion = undefined;
+    if (promotion === undefined) {
       return;
     }
-    const piece = this.api.state.pieces[this.promotion.dest];
+    const piece = this.api.state.pieces[promotion.dest];
     if (piece === undefined || piece.role !== 'pawn') {
       return;
     }
-    this.respond(this.promotion.orig, this.promotion.dest, role);
-    this.promotion = undefined;
+    this.updateStatus(promotion.orig, promotion.dest, role);
+    this.makeResponse();
   }
 
   public promotionCancel() {
