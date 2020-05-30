@@ -2,7 +2,7 @@ import * as types from './types';
 import Control from './control';
 import View from './view';
 
-export default class Chessdrill {
+export class Chessdrill {
   private ctrl: Control;
   private view: View;
 
@@ -13,5 +13,9 @@ export default class Chessdrill {
 
   public redraw() {
     this.view.redraw();
+  }
+
+  public destroy() {
+    this.ctrl.destroy();
   }
 }

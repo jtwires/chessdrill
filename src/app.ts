@@ -1,6 +1,6 @@
 import page from 'page';
 
-import Chessdrill from './chessdrill';
+import { Chessdrill } from './chessdrill';
 import * as types from './types';
 
 export function run(element: Element, opts: types.Options) {

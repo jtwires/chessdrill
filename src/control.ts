@@ -39,9 +39,7 @@ export default class Control {
   }
 
   set api(api: Api) {
-    if (this._api !== undefined) {
-      this._api.destroy();
-    }
+    this.destroy();
     this._api = api;
     this.update();
   }
@@ -99,6 +97,10 @@ export default class Control {
         }
       )
     );
+  }
+
+  public destroy() {
+    this.withApi(api => api.destroy());
   }
 
   private withApi<T>(f: (api: Api) => T): T | undefined {

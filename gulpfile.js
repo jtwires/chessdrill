@@ -7,21 +7,23 @@ const watchify = require('watchify');
 const browserify = require('browserify');
 const terser = require('gulp-terser');
 const tsify = require('tsify');
+const concat = require('gulp-concat');
+const uglifycss = require('gulp-uglifycss');
 
 const destination = () => gulp.dest('./dist');
 
 const prod = () => {
   const opts = {
     standalone: 'Chessdrill',
-    entries: ['src/chessdrill.ts'],
+    entries: ['src/index.js'],
     debug: false
   };
   return browserify(opts)
     .plugin(tsify)
     .bundle()
-    .pipe(source('chessdrill.min.js'))
-    .pipe(buffer())
-    .pipe(terser({safari10: true}))
+    .pipe(source('chessdrill.js'))
+    //.pipe(buffer())
+    //.pipe(terser({safari10: true}))
     .pipe(destination());
 };
 
@@ -59,6 +61,32 @@ const watch = () => {
   return bundle();
 };
 
+const css = () => {
+  return gulp
+    .src('assets/chess*.css')
+    .pipe(uglifycss())
+    .pipe(concat('chessdrill.css'))
+    .pipe(gulp.dest('./dist/assets'));
+};
+
+const theme = () => {
+  return gulp
+    .src('assets/theme.css')
+    .pipe(gulp.dest('./dist/assets'));
+};
+
+const images = () => {
+  return gulp
+    .src('assets/images/**/*')
+    .pipe(gulp.dest('./dist/assets/images'));
+};
+
 gulp.task('dev', dev);
+gulp.task('watch', watch);
+
 gulp.task('prod', prod);
-gulp.task('default', watch);
+gulp.task('css', css);
+gulp.task('theme', theme);
+gulp.task('images', images);
+
+gulp.task('default', gulp.parallel(['prod', 'css', 'theme', 'images']));
